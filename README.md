@@ -10,7 +10,9 @@ Full responsive application
 
 https://github.com/jgtonys/freelancer-web-matching.git
 
-[![Video Label](/home/jungyu/%ED%95%99%EA%B5%90/3-2/database/upload/freelancer-web-matching/src/youtube.png)](https://youtu.be/lg0wD5D7Ucg)
+
+
+[![Video Label](src/youtube.png)](https://youtu.be/lg0wD5D7Ucg)
 
 
 
