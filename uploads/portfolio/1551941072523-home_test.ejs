@@ -1,0 +1,255 @@
+<html>
+    <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+            <meta name="description" content="">
+            <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+            <meta name="generator" content="Jekyll v3.8.5">
+            
+            <link rel="stylesheet" href="style/payment.css" type="text/css">
+            <link rel="stylesheet" href="style/progress.css" type="text/css">
+            <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+            <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+            
+            
+
+            
+            <!-- Bootstrap core CSS -->
+        <link href="/style/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+            <!-- Custom styles for this template -->
+            <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
+            <!-- Custom styles for this template -->
+            <!-- <link href="blog.css" rel="stylesheet"> -->
+    </head>
+    <body>
+            <div class="container">
+                    <header class="blog-header py-3" style="background-color:#e9d419">
+                      <div class="row flex-nowrap justify-content-between align-items-center">
+                        <div class="col-4 pt-1">
+                          <img src="image/logo_2.png" style="width:100px; height:50px;">
+                        </div>
+                        <div class="col-4 text-center">
+                          <a class="blog-header-logo text-muted" href="#">경찰병원역 스타벅스점</a>
+                        </div>
+                        <div class="col-4 d-flex justify-content-end align-items-center">
+                          <a class="text-muted" href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="mx-3" role="img" viewBox="0 0 24 24" focusable="false"><title>Search</title><circle cx="10.5" cy="10.5" r="7.5"></circle><path d="M21 21l-5.2-5.2"></path></svg>
+                          </a>
+                          <a class="btn btn-sm btn-outline-secondary" href="login">Sign up</a>
+                        </div>
+                      </div>
+                    </header>
+
+                    <div class="nav-scroller py-1 mb-2" style="background-color:#e9d419 ;">
+                      <nav class="nav d-flex justify-content-between">
+                        <a class="p-2" href="/home" style="color: #ecf08a;">홈</a>
+                        <a class="p-2 text-white" href="payment" id="trans">이체</a>
+                        <a class="p-2 text-white" href="#">출퇴근</a>
+                        <a class="p-2 text-white" href="#">설정</a>
+                      </nav>
+                    </div>
+
+                    <div class="jumbotron p-4 p-md-5 text-dark rounded " style="background-color: #fff; text-align: center;">
+
+
+                      <h1 style="margin-left: 0px ;color: rgba(112, 112, 112, 0.75);" id="progressPer"></h1>
+                        <div class="demo" style="margin:auto"></div>
+                      </div>
+                      
+
+                        
+                        <div class="detail" id="detailbtn">근무현황</div>
+
+                        <div id="staff_recent" style='background-color: #e9d419'></div>
+                        <table class='table table-striped table-sm' style='background-color: rgba(236, 240, 138, 0.87);' >
+                            <tbody id="tb">
+                            </tbody>
+                        </table>
+
+                        <div id="staff_all" style='background-color: #e9d419;'></div>
+                        <table class='table table-striped table-sm' style='background-color: rgba(236, 240, 138, 0.87);' >
+                            <tbody id="tb_all">
+                            </tbody>
+                          </table>
+             
+                          </div>
+                        </div>
+                    </div>
+
+                    
+                    <script src="style/js/radial_progress.js"></script>
+                      <script>
+                          var input_percentage = 50;
+                          document.getElementById('progressPer').innerHTML = "출석률 "+input_percentage+"%"
+                          var myProgress = $(".demo").imgProgress(
+                              {
+                                  img_url: "image/ceo.png",
+                                  size: 250,
+                                  backgroundColor: '#ffffff',
+                                  foregroundColor: 'blue',
+                                  percent: input_percentage
+                              }
+                          );
+
+                        </script>
+
+                        <script language="JavaScript">
+
+                          var check = true;
+                          var ceo_code = 0;
+                          $('#detailbtn').click(function(){
+                               /*
+                              $.ajax({
+                                  url: "",
+                                  type: "POST",
+                                  datatype: 'json',
+                                  data: {
+                                      zipcode: ceo_code
+                                  }
+                              }).done(function(result){
+                                  count = result.count;
+                                  name = result.name;
+                                  work_time = result.work_time;
+                                  count_all = result.count_all;
+                                  name_all = result.name_all;
+                              })
+                              */
+
+                            if(check == true){
+
+                              ///////////////////현재 근무중인 알바생 리스트 //////////////////
+                              var count = 5;
+                              var name = ["김혁","지은","유라","정연","준규"];
+                              var work_time= ["9:00AM~1:00PM", "1:00PM~3:00PM", "3:00PM~5:00PM", "5:00PM~7:00PM","7:00PM~9:00PM"]
+                              var str= "";
+                              var str_all="";
+                              
+                              document.getElementById('staff_recent').innerHTML = "<h1 style='color: rgba(112, 112, 112, 0.75); width:50%; margin:0'>현재 근무중</h1>"
+                              for(i=0; i<count; i++){
+                                  str+="<tr><td style='width:50px'><img src='/image/staff_small.png' style='max-width:100% ; max-height:100%'></td><td class='tdtext' style='padding-top:10px;'>"+name[i]+"</td><td class='tdtext'  style='padding-top:10px;'>"+work_time[i]+"</td></tr>";
+                                  
+                              }
+                              document.getElementById('tb').innerHTML=str;
+
+                              
+                               /////////////////////전체 알바생 리스트 및 근무설정//////////////////////////////////////
+                              var count_all = 5;
+                              var name_all = ["김혁","지은","유라","정연","준규"];
+                              
+                              document.getElementById('staff_all').innerHTML = "<font style='color: rgba(112, 112, 112, 0.75); font-size:40px; margin-right:60%'>전체 알바생</font>"
+                              +"<button type='button' class='btn btn-default' id='add' style='font-size:20px;' >추가</button>"
+                              +"<button type='button' class='btn btn-default' id='delete' style='font-size:20px;'>삭제</button>";
+           
+                              for(i=0; i<count_all; i++){
+                                  str_all+="<tr><td style='width:50px'><img src='/image/staff_small.png' style='max-width:100% ; max-height:100%'></td><td class='tdtext' style='padding-top:10px;'>"+name_all[i]+"</td><td style='width:50px'><img src='/image/setting_small.png' id='setting' style='max-width:100% ; max-height:100%'></td></tr>";
+                                  
+                              }
+                              
+                              document.getElementById('tb_all').innerHTML=str_all;
+
+                              $('#setting').click(function(){
+                                /////// 팝업창 열리면서 설정할 수 있게////////////
+                              })
+                              
+                              $('#add').click(function(){
+                                /*
+                                $('#exampleModal').on('show.bs.modal', function (event) {
+                                  var button = $(event.relatedTarget) // Button that triggered the modal
+                                  var recipient = button.data('whatever') // Extract info from data-* attributes
+                                  // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+                                  // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+                                  var modal = $(this)
+                                  modal.find('.modal-title').text('New message to ' + recipient)
+                                  modal.find('.modal-body input').val(recipient)
+                                })
+                                */
+                               add_row();
+                              })
+                    
+                              $('#delete').click(function(){
+                                delete_row();
+                              })
+                               ///////////////////////////////////////////////////////////////////////////////////////
+                              check = false;
+                              document.getElementById('detailbtn').innerHTML="감추기"
+                              }
+                            else{
+                              check = true;
+                              str="";
+                              str_all=""
+                              document.getElementById('tb').innerHTML=str;
+                              document.getElementById('tb_all').innerHTML=str_all;
+                              document.getElementById('staff_recent').innerHTML="";
+                              document.getElementById('staff_all').innerHTML="";
+                              document.getElementById('detailbtn').innerHTML="근무현황"
+                            }
+                            
+                          })
+                  
+                        </script>
+
+                        
+                      </div>
+                  
+                    
+
+
+                  <script src="/mainjs/payment.js"></script>
+
+                  <script>
+                    function add_row() {
+                      var my_tbody = document.getElementById('tb_all');
+                      // var row = my_tbody.insertRow(0); // 상단에 추가
+                      var row = my_tbody.insertRow( my_tbody.rows.length ); // 하단에 추가
+                      var cell0 = row.insertCell(0);
+                      var cell1 = row.insertCell(1);
+                      var cell2 = row.insertCell(2);
+                                  
+                      cell0.innerHTML = "<img src='/image/staff_small.png' style='max-width:100% ; max-height:100%'>";
+                      cell1.innerHTML = 'name';
+                      cell2.innerHTML = "<img src='/image/setting_small.png' style='max-width:100% ; max-height:100%'>";
+                    }
+                  
+                    function delete_row() {
+                      var my_tbody = document.getElementById('tb_all');
+                      if (my_tbody.rows.length < 1) return;
+                      // my_tbody.deleteRow(0); // 상단부터 삭제
+                      my_tbody.deleteRow( my_tbody.rows.length-1 ); // 하단부터 삭제
+                    }
+                  </script>
+                  
+
+                  <!-- //////////////////////////// add팝업창 //////////////////////////////////////////   -->
+                  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                          <form>
+                            <div class="form-group">
+                              <label for="recipient-name" class="col-form-label">Recipient:</label>
+                              <input type="text" class="form-control" id="recipient-name">
+                            </div>
+                            <div class="form-group">
+                              <label for="message-text" class="col-form-label">Message:</label>
+                              <textarea class="form-control" id="message-text"></textarea>
+                            </div>
+                          </form>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                          <button type="button" class="btn btn-primary">Send message</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- /////////////////////////////////////////////////////////////////////////////////// -->
+    </body>
+</html>

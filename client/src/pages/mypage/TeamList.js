@@ -12,6 +12,7 @@ import Typography from '@material-ui/core/Typography';
 import AddIcon from '@material-ui/icons/Add';
 import Divider from '@material-ui/core/Divider';
 import AddTeam from './AddTeam';
+import MessageModal from './MessageModal';
 import * as service from '../../services/post';
 
 
@@ -36,14 +37,38 @@ const styles = theme => ({
 
 class TeamList extends React.Component {
   state = {
-    teamlist: [1,2,3],
-    memberlist: [1,2,3],
+    teamlist: [],
+    memberlist: [],
     modal: false,
+    messageModal: false,
+    setTeamMessage: [],
   };
 
   modalToggle() {
     this.setState({
       modal: !this.state.modal
+    });
+  }
+
+  messageModalToggle() {
+    this.setState({
+      messageModal: !this.state.messageModal
+    });
+  }
+
+  setMessage = async (e,t) => {
+    let f = true;
+    const d = await service.getTeamMessage(t).then(r => {
+      return r.data;
+    })
+    .catch(e => {
+      f = false;
+      console.log(e.response.data.message);
+      return [];
+    });
+
+    this.setState({
+      setTeamMessage: d,
     });
   }
 
@@ -63,10 +88,8 @@ class TeamList extends React.Component {
       return [];
     });
 
-
-
-    //console.log(d);
-    if(f) this.parsingData(d);
+    if(d.length == 0) alert("팀정보가 없습니다.");
+    else this.parsingData(d);
   }
 
   parsingData(array) {
@@ -94,16 +117,25 @@ class TeamList extends React.Component {
     let resultarray = [];
     let memberarray = [];
     let resultJson = '';
+    let teamidarray = [];
+    for(var i=0;i<teamList.length;i++) {
+      teamidarray = [];
+      for(var j=0;j<array[1].length;j++) {
+        if(teamList[i] == array[1][j].team_id) {
+          teamidarray.push(array[1][j]);
+        }
+      }
+      memberarray.push(teamidarray);
+    }
     for(var i=0;i<teamList.length;i++) {
       resultJson = {
+        id: teamList[i],
         name: teamInfo[i].name,
         min_career: teamInfo[i].min_career,
         spec: teamSpec[i],
       }
       resultarray.push(resultJson);
-      memberarray.push(array[1]);
     }
-    console.log(memberarray);
     this.setState({
       teamlist: resultarray,
       memberlist: memberarray,
@@ -131,6 +163,7 @@ class TeamList extends React.Component {
         TEAM 생성
       </Button>
       <AddTeam modal={this.state.modal} toggle={e =>this.modalToggle(e)}/>
+      <MessageModal modal={this.state.messageModal} msg={this.state.setTeamMessage} toggle={e =>this.messageModalToggle(e)}/>
       {this.state.teamlist.map((team,i) => {
         return (
           <div>
@@ -149,18 +182,17 @@ class TeamList extends React.Component {
                 {this.state.memberlist[i].map((m,j) => {
                   return (
                     <Typography component="p">
-                      {m.user_id} 님({m.name}) {m.age}세 경력{m.career}년 평점{m.grade_sum}/{m.request_count}점
+                      {m.user_id}님({m.name}) {m.age}세 경력{m.career}년 평점: {Math.round(m.grade_sum / m.request_count * 10)/10}점
                     </Typography>
                   )
                 })}
-
               </CardContent>
             </CardActionArea>
             <CardActions>
-              <Button size="small" color="primary">
-                팀원 소개
-              </Button>
-              <Button size="small" color="primary">
+              <Button size="small" color="primary" onClick={(e) => {
+                this.setMessage(e,team.id);
+                this.messageModalToggle(e);
+              }}>
                 팀 메세지
               </Button>
             </CardActions>

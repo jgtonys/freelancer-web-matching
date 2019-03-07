@@ -1,23 +1,50 @@
 const multer = require('multer');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, '../public/upload/')
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads/portfolio/')
   },
-  filename: (req, file, cb) => {
-    cb(null, 'file.pdf')
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
   }
-});
+})
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1024*1024*10
+var resultReport = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads/report/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
   }
-});
+})
 
-module.exports.up = (req, res, next) =>{
-  console.log(req.body.userPortfolio);
-  upload.fields([req.body.userPortfolio]);
-  next();
+var uploadSpec = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads/teamspec/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
+  }
+})
+
+
+module.exports.upload = multer({ storage: storage })
+
+module.exports.uploadReport = multer({ storage: resultReport })
+
+module.exports.uploadTeamSpec = multer({ storage: uploadSpec })
+
+module.exports.downloadPortfolio = (req, res, next) => {
+  Filepath = "./uploads/portfolio/" + req.params.id;
+  res.download(Filepath);
+}
+
+module.exports.downloadReport = (req, res, next) => {
+  Filepath = "./uploads/report/" + req.params.id;
+  res.download(Filepath);
+}
+
+module.exports.downloadSpec = (req, res, next) => {
+  Filepath = "./uploads/teamspec/" + req.params.id;
+  res.download(Filepath);
 }

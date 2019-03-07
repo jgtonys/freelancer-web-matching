@@ -25,21 +25,12 @@ import axios from 'axios';
 
 
 
-
-let counter = 0;
-function createData(name, calories, fat, carbs, protein) {
-  counter += 1;
-  return { id: counter, name, calories, fat, carbs, protein };
-}
-
-
-
 function desc(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
   }
   if (b[orderBy] > a[orderBy]) {
-    return 1;
+    return 1;3
   }
   return 0;
 }
@@ -59,6 +50,7 @@ function getSorting(order, orderBy) {
 }
 
 const rows = [
+  { id: 'id', numeric: false, disablePadding: false, label: '' },
   { id: 'user_id', numeric: false, disablePadding: true, label: 'User id' },
   { id: 'name', numeric: false, disablePadding: false, label: 'Name' },
   { id: 'userType', numeric: false, disablePadding: false, label: 'Type' },
@@ -77,13 +69,6 @@ class AllUserHead extends React.Component {
     return (
       <TableHead>
         <TableRow>
-          <TableCell padding="checkbox">
-            <Checkbox
-              indeterminate={numSelected > 0 && numSelected < rowCount}
-              checked={numSelected === rowCount}
-              onChange={onSelectAllClick}
-            />
-          </TableCell>
           {rows.map(row => {
             return (
               <TableCell
@@ -214,8 +199,8 @@ const styles = theme => ({
 
 class AllUser extends React.Component {
   state = {
-    order: 'asc',
-    orderBy: 'calories',
+    order: 'desc',
+    orderBy: 'id',
     selected: [],
     data: [],
     tableData: [{
@@ -246,7 +231,6 @@ class AllUser extends React.Component {
   }
 
   setSelectedUser(e,n) {
-    console.log(n);
     this.setState({
       selectedUser: n,
     })
@@ -279,6 +263,7 @@ class AllUser extends React.Component {
         userType: type,
         phone: phone,
         grade: grade,
+        disabled: true,
       }
       tid += 1;
       parsedArray.push(parsedjson);
@@ -286,6 +271,31 @@ class AllUser extends React.Component {
 
     for(let k=1;k<3;k++) {
       for(let i=0;i<array[k].length;i++) {
+        let disabled = false;
+        if(k == 1) {
+          for(let j=0;j<array[3].length;j++) {
+            if(j == 0) {
+              let twice = 0;
+              for(let h=0;h<array[3][j].length;h++) {
+                if(array[k][i].id == array[3][j][h].fid) {
+                  twice += 1;
+                  if(twice >= 2) {
+                    disabled = true;
+                    break;
+                  }
+                }
+              }
+            }
+            else {
+              for(let h=0;h<array[3][j].length;h++) {
+                if(array[k][i].id == array[3][j][h].fid) {
+                  disabled = true;
+                  break;
+                }
+              }
+            }
+          }
+        }
         if(array[k][i].grade_sum == 0 | array[k][i].request_count == 0) grade = 0;
         else grade = array[k][i].grade_sum/array[k][i].request_count;
         if(k == 1) type = 'FREELANCER';
@@ -299,12 +309,12 @@ class AllUser extends React.Component {
           userType: type,
           phone: array[k][i].phone,
           grade: grade,
+          disabled: disabled,
         }
         tid += 1;
         parsedArray.push(parsedjson);
       }
     }
-    console.log(parsedArray);
     this.setState({
       data: parsedArray,
     });
@@ -320,11 +330,6 @@ class AllUser extends React.Component {
     });
 
     this.parsingData(d);
-
-    /*this.setState({
-      tableData: d,
-    });
-    this.parsingData(this.state.tableData);*/
   }
 
   handleRequestSort = (event, property) => {
@@ -376,8 +381,6 @@ class AllUser extends React.Component {
   };
 
   selectedDel = event => {
-    console.log("tid : " + this.state.selected);
-
     let idArr = [];
     let T = [];
     let F = false;
@@ -392,12 +395,10 @@ class AllUser extends React.Component {
         }
       }
     }
-    console.log("idArr : " + idArr);
     if(F) alert("삭제할 수 없습니다");
     else {
       service.deleteUser(idArr,T);
-      alert('성공적으로 삭제되었습니다');
-      window.location = "/";
+
     }
   }
 
@@ -437,7 +438,12 @@ class AllUser extends React.Component {
                       selected={isSelected}
                     >
                       <TableCell padding="checkbox">
-                        <Checkbox checked={isSelected} onClick={event => this.handleClick(event, n.tid)}/>
+                        {n.disabled ? (
+                          <Checkbox disabled={true}/>
+                        ):(
+                          <Checkbox checked={isSelected} onClick={event => this.handleClick(event, n.tid)}/>
+                        )}
+
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none" onClick={e => {
                         this.setSelectedUser(e,n);

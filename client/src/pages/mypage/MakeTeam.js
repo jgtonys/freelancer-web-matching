@@ -59,6 +59,8 @@ class MakeTeam extends React.Component {
   state = {
     teamMembers : [0],
     teamId : [0],
+    verify : [false],
+    create: true,
   };
 
   componentDidMount() {
@@ -70,11 +72,33 @@ class MakeTeam extends React.Component {
     else {
       const n = this.state.teamMembers.concat(0);
       const m = this.state.teamId.concat(0);
+      const v = this.state.verify.push(false);
       this.setState({
         teamMembers: n,
         teamId: m,
+        create: true,
       })
     }
+  }
+
+  deleteSelect = (event,val) => {
+    const tm = this.state.teamMembers.filter((item,j) => val !== j);
+    const tl = this.state.teamId.filter((item,j) => val !== j);
+    const v = this.state.verify.filter((item,j) => val !== j);
+
+    let f = false;
+    for(var i=0;i<v.length;i++) {
+      if(v[i] == false) {
+        f = true;
+        break;
+      }
+    }
+    this.setState({
+      teamMembers: tm,
+      teamId: tl,
+      verify: v,
+      create: f,
+    })
   }
 
   handleIdChange = (event,val) => {
@@ -90,17 +114,49 @@ class MakeTeam extends React.Component {
     })
   }
 
-  idConfirm = (event,val) => {
+  idConfirm = async (event,val) => {
+    let f = true;
     const user_id = this.state.teamId[val];
-    console.log(user_id);
+    const d = await service.idVerify(user_id).then(r => {
+      return r.data;
+    })
+    .catch(e => {
+      f = false;
+      console.log(e.response.data.message);
+      return [];
+    });
+    if(d.length == 0) {
+      alert("해당 아이디의 사용자가 없습니다.");
+    }
+    else {
+      alert("사용자 검증 완료");
+      const dis = this.state.verify.map((item,j) => {
+        if(val === j) {
+          return true;
+        } else {
+          return item;
+        }
+      });
+      let l = dis;
+      let f = false;
+      for(var i=0;i<l.length;i++) {
+        if(l[i] == false) {
+          f = true;
+          break;
+        }
+      }
+      this.setState({
+        verify: dis,
+        create: f,
+      })
+
+    }
   }
 
   addTeam = event => {
-    console.log("asdfasdfasdf");
     event.preventDefault();
     const data = new FormData(event.target);
     service.addTeam([data,this.state.teamId]);
-    alert("팀 생성이 완료되었습니다.");
   }
 
   render() {
@@ -119,37 +175,38 @@ class MakeTeam extends React.Component {
             {this.state.teamMembers.map((r,i) => {
               return (
                 <Grid container spacing={24}>
-                <Grid item xs={8}>
+                <Grid item xs={6}>
                 <FormControl fullWidth>
                   <InputLabel htmlFor="teamMember">팀원 아이디</InputLabel>
                   <Input inputProps={{
                     name: 'teamMember'+i,
                     id: 'teamMember'+i,
+                    disabled: this.state.verify[i],
                   }}
                   onChange={(e) => this.handleIdChange(e,i)}
                   />
                 </FormControl>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                 <FormControl fullWidth>
-                <Button variant="contained" className={classes.button} onClick={(e) =>this.idConfirm(e,i)}>
-                  확인
+                <Button variant="contained" className={classes.button} onClick={(e) =>this.idConfirm(e,i)} disabled={this.state.verify[i]}>
+                  검증
                 </Button>
                 </FormControl>
+                </Grid>
+                <Grid item xs={3}>
+                  <Button onClick={(e) => this.deleteSelect(e,i)}><Icon color="primary">clear</Icon></Button>
                 </Grid>
                 </Grid>
               );
             })}
-            <FormControl margin="normal" required fullWidth>
-              <label>Team Photo</label>
-              <input type="file" name="teamPhoto" id="teamPhoto"/>
-            </FormControl>
             <Button
               type="submit"
               fullWidth
               variant="contained"
               color="primary"
               className={classes.submit}
+              disabled={this.state.create}
             >
               생성하기
             </Button>

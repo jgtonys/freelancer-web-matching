@@ -91,8 +91,11 @@ class ModifyUser extends React.Component {
     languages: [''],
     scores: [0],
     userType: 2,
-    major: '',
-    file: null,
+    major: 'none',
+    title: null,
+    file_location: null,
+    disabled: false,
+    disabledMsg: '',
     menuLanguages: [
       'C',
       'JAVA',
@@ -105,6 +108,7 @@ class ModifyUser extends React.Component {
     ],
     getInfo: [],
     passchange: false,
+    portchange: false,
   };
 
   handleLangChange = (event,val) => {
@@ -121,9 +125,21 @@ class ModifyUser extends React.Component {
     });
   }
 
+  handleMajorChange = event => {
+    this.setState({
+      major: event.target.value,
+    });
+  }
+
   passchange() {
     this.setState({
       passchange: !this.state.passchange,
+    })
+  }
+
+  portchange() {
+    this.setState({
+      portchange: !this.state.portchange,
     })
   }
 
@@ -140,10 +156,27 @@ class ModifyUser extends React.Component {
       return [];
     });
 
-    console.log(d);
+    if(d[1].length > 1) {
+      this.setState({
+        disabledMsg: "2명 이상의 팀에 속해있으므로 수정이 불가합니다.",
+        disabled: true,
+      });
+    }
+    else if(d[2].length > 0) {
+      this.setState({
+        disabledMsg: "의뢰를 진행하고 있는 팀에 속해 있으므로 수정이 불가합니다.",
+        disabled: true,
+      });
+    }
+    else if(d[3].length > 0) {
+      this.setState({
+        disabledMsg: "의뢰를 신청한 상태이므로 수정이 불가합니다.",
+        disabled: true,
+      });
+    }
 
     this.setState({
-      getInfo: d,
+      getInfo: d[0],
     });
 
     var nl = [];
@@ -161,9 +194,9 @@ class ModifyUser extends React.Component {
       selectionNr: nl,
       languages: ll,
       scores: sl,
-      file: this.state.getInfo[0].title,
+      title: this.state.getInfo[0].title,
+      file_location: this.state.getInfo[0].file_location,
     })
-    console.log(this.state.getInfo);
   }
 
   handleScoChange = (event,val) => {
@@ -215,6 +248,10 @@ class ModifyUser extends React.Component {
     }
   }
 
+  viewfile = event => {
+    window.location = "/" + this.state.file_location;
+  }
+
   addUser = event => {
     event.preventDefault();
     const data = new FormData(event.target);
@@ -222,25 +259,25 @@ class ModifyUser extends React.Component {
     if(!data.get('userPassword')) {
       alert('비밀번호를 입력하세요');
     }
-    else if(this.props.data.userType == 'FREELANCER') { //freelancer
-      this.setState({
-        userType: 2,
-      })
-      let id = [this.props.data.id];
-      service.deleteUser(id,[2]);
-      service.addUser([data,2,this.state.phonemask,this.state.textmask,this.state.agetextmask,this.state.languages,this.state.scores]);
-      alert("사용자 정보가 수정되었습니다.");
-      window.location = "/";
-    }
     else if(this.props.data.userType == 'CLIENT') {
-      this.setState({
-        userType: 3,
-      })
-      let id = [this.props.data.id];
-      service.deleteUser(id,[3]);
-      service.addUser([data,3,this.state.phonemask]);
-      alert("사용자 정보가 수정되었습니다.");
-      window.location = "/";
+      data.append('userType',3);
+      data.append('phone',this.state.phonemask);
+      data.append('cid',this.props.data.id);
+      service.updateClient(data);
+    }
+    else if(!this.state.portchange) {
+      alert('수정하려면 포트폴리오를 첨부하세요');
+    }
+    else if(this.props.data.userType == 'FREELANCER') { //freelancer
+      data.append('userType',2);
+      data.append('phone',this.state.phonemask);
+      data.append('career',this.state.textmask);
+      data.append('age',this.state.agetextmask);
+      data.append('languages',this.state.languages);
+      data.append('scores',this.state.scores);
+      data.append('major',this.state.major);
+      data.append('fid',this.props.data.id);
+      service.updateFreelancer(data);
     }
     else {
       alert("관리자는 정보 수정이 불가합니다");
@@ -252,7 +289,7 @@ class ModifyUser extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { phonemask, textmask, agetextmask, major, file } = this.state;
+    const { phonemask, textmask, agetextmask, major, title } = this.state;
 
     let permissionRendering = null;
     if (this.props.data.userType == 'FREELANCER') {
@@ -278,7 +315,7 @@ class ModifyUser extends React.Component {
           </FormControl>
           <FormControl margin="normal" required fullWidth>
             <InputLabel htmlFor="userMajor">User Major</InputLabel>
-            <Input id="userMajor" name="userMajor" autoComplete="User Major" value={major}/>
+            <Input id="userMajor" name="userMajor" autoComplete="User Major" value={major} onChange={(e) => this.handleMajorChange(e)}/>
           </FormControl>
 
           <Divider />
@@ -333,10 +370,22 @@ class ModifyUser extends React.Component {
               </Grid>
             );
           })}
-          <FormControl margin="normal" required fullWidth>
-            <label>Portfolio</label>
-            <input type="file" name="userPortfolio" id="userPortfolio" />
-          </FormControl>
+          {!this.state.portchange ? (
+            <Grid container spacing={24}>
+              <Grid item xs={8}>
+                <Button color="secondary" className={classes.submit} onClick={e => this.viewfile(e)} variant="contained" fullWidth>{title}</Button>
+              </Grid>
+              <Grid item xs={4}>
+                <Button color="primary" className={classes.submit} onClick={e => this.portchange(e)} variant="contained" fullWidth>입력</Button>
+              </Grid>
+            </Grid>
+          ):(
+            <FormControl margin="normal" required fullWidth>
+              <label>Portfolio</label>
+              <input type="file" name="userPortfolio" id="userPortfolio" />
+            </FormControl>
+          )}
+
           </div>
         );
       } else {
@@ -350,14 +399,14 @@ class ModifyUser extends React.Component {
           <form onSubmit={this.addUser} className={classes.form}>
             <FormControl margin="normal" required fullWidth>
               <InputLabel htmlFor="userId">User ID</InputLabel>
-              <Input id="userId" name="userId" value={this.props.data.user_id} autoFocus />
+              <Input id="userId" name="userId" defaultValue={this.props.data.user_id} autoFocus />
             </FormControl>
             {!this.state.passchange ? (
               <Grid container spacing={24}>
                 <Grid item xs={8}>
                   <FormControl margin="normal" required fullWidth>
                     <InputLabel htmlFor="userPassword">User Password</InputLabel>
-                    <Input value={this.props.data.password} disabled/>
+                    <Input defaultValue={this.props.data.password} disabled/>
                   </FormControl>
                 </Grid>
                 <Grid item xs={4}>
@@ -373,7 +422,7 @@ class ModifyUser extends React.Component {
 
             <FormControl margin="normal" required fullWidth>
               <InputLabel htmlFor="userName">User Name</InputLabel>
-              <Input name="userName" id="userName" value={this.props.data.name}/>
+              <Input name="userName" id="userName" defaultValue={this.props.data.name}/>
             </FormControl>
             <FormControl margin="normal" required fullWidth>
               <InputLabel htmlFor="userPhone">Phone Number</InputLabel>
@@ -384,21 +433,20 @@ class ModifyUser extends React.Component {
                 inputComponent={PhoneMaskCustom}
               />
             </FormControl>
-            <FormControl margin="normal" required fullWidth>
-              <label>User Photo</label>
-              <input type="file" name="userPhoto" id="userPhoto"/>
-            </FormControl>
             {permissionRendering}
-
             <Button
               type="submit"
               fullWidth
               variant="contained"
               color="primary"
               className={classes.submit}
+              disabled={this.state.disabled}
             >
-              수정하기
+            {this.state.disabled ?
+                this.state.disabledMsg
+            :(<div>수정하기</div>)}
             </Button>
+
           </form>
         </Paper>
       </main>

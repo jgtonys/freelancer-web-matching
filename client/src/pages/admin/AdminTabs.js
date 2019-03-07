@@ -8,6 +8,8 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import AllUser from './AllUser';
 import AllRequest from './AllRequest';
+import AllTeam from './AllTeam';
+import DecRequest from './DecRequest';
 
 function TabContainer({ children, dir }) {
   return (
@@ -57,6 +59,7 @@ class AdminTabs extends React.Component {
             <Tab label="모든 사용자" />
             <Tab label="모든 의뢰" />
             <Tab label="모든 팀" />
+            <Tab label="거부된 의뢰" />
           </Tabs>
         </AppBar>
         <SwipeableViews
@@ -66,7 +69,8 @@ class AdminTabs extends React.Component {
         >
           <TabContainer dir={theme.direction}><AllUser /></TabContainer>
           <TabContainer dir={theme.direction}><AllRequest /></TabContainer>
-          <TabContainer dir={theme.direction}>모든 팀 컴포넌트 추가 예정</TabContainer>
+          <TabContainer dir={theme.direction}><AllTeam /></TabContainer>
+          <TabContainer dir={theme.direction}><DecRequest /></TabContainer>
         </SwipeableViews>
       </div>
     );

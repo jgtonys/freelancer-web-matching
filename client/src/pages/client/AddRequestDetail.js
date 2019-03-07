@@ -115,9 +115,13 @@ class AddRequestDetail extends React.Component {
 
 
   addRequest = event => {
+    const uid = window.sessionStorage.getItem('uid');
     event.preventDefault();
     const data = new FormData(event.target);
-    service.addRequest([data,this.state.languages,this.state.scores]);
+    data.append('client_id',uid);
+    data.append('languages',this.state.languages);
+    data.append('scores',this.state.scores);
+    service.addRequest(data);
   }
 
   deleteSelect = (event,val) => {
@@ -281,7 +285,6 @@ class AddRequestDetail extends React.Component {
                     value={this.state.scores[i]}
                     onChange={(e) => this.handleScoChange(e,i)}
                   >
-                    <MenuItem value={0}>0</MenuItem>
                     <MenuItem value={1}>1</MenuItem>
                     <MenuItem value={2}>2</MenuItem>
                     <MenuItem value={3}>3</MenuItem>

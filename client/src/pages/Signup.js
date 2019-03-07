@@ -96,6 +96,7 @@ class Signup extends React.Component {
     languages: [''],
     scores: [0],
     userType: 2,
+    portfolio: '',
     menuLanguages: [
       'C',
       'JAVA',
@@ -171,17 +172,31 @@ class Signup extends React.Component {
     }
   }
 
+  onChangePortfolio = event => {
+    this.setState({
+      portfolio: event.target.files[0],
+    })
+
+  }
+
   addUser = event => {
     event.preventDefault();
     const data = new FormData(event.target);
 
+
     if(this.state.userType == 2) { //freelancer
-      service.addUser([data,this.state.userType,this.state.phonemask,this.state.textmask,this.state.agetextmask,this.state.languages,this.state.scores]);
-      alert('회원가입이 완료되었습니다');
+      data.append('userType',this.state.userType);
+      data.append('phone',this.state.phonemask);
+      data.append('career',this.state.textmask);
+      data.append('age',this.state.agetextmask);
+      data.append('languages',this.state.languages);
+      data.append('scores',this.state.scores);
+      service.addUser(data);
     }
     else if(this.state.userType == 3) {
-      service.addUser([data,this.state.userType,this.state.phonemask]);
-      alert('회원가입이 완료되었습니다');
+      data.append('userType',this.state.userType);
+      data.append('phone',this.state.phonemask);
+      service.addUser(data);
     }
   }
 
@@ -272,7 +287,7 @@ class Signup extends React.Component {
           })}
           <FormControl margin="normal" required fullWidth>
             <label>Portfolio</label>
-            <input type="file" name="userPortfolio" id="userPortfolio"/>
+            <input type="file" name="userPortfolio" id="userPortfolio" onChange={this.onChangePortfolio}/>
           </FormControl>
           </div>
         );
@@ -290,7 +305,7 @@ class Signup extends React.Component {
           <Typography component="h1" variant="h5">
             Registeration
           </Typography>
-          <form onSubmit={this.addUser} className={classes.form}>
+          <form onSubmit={this.addUser} className={classes.form} enctype="multipart/form-data">
           <FormControl component="fieldset" required fullWidth>
               <FormLabel>User Type</FormLabel>
               <RadioGroup
@@ -323,10 +338,6 @@ class Signup extends React.Component {
                 id="userPhone"
                 inputComponent={PhoneMaskCustom}
               />
-            </FormControl>
-            <FormControl margin="normal" required fullWidth>
-              <label>User Photo</label>
-              <input type="file" name="userPhoto" id="userPhoto"/>
             </FormControl>
             {permissionRendering}
 

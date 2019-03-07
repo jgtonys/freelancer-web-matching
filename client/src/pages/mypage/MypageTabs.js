@@ -7,6 +7,9 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import TeamList from './TeamList';
+import IntPortfolio from './IntPortfolio';
+import ExtPortfolio from './ExtPortfolio';
+import ModifyUser from './ModifyUser';
 
 
 function TabContainer({ children, dir }) {
@@ -80,9 +83,9 @@ class MypageTabs extends React.Component {
             onChangeIndex={this.handleChangeIndex}
           >
             <TabContainer dir={theme.direction}><TeamList /></TabContainer>
-            <TabContainer dir={theme.direction}>회원정보 수정</TabContainer>
-            <TabContainer dir={theme.direction}>내적 포트폴리오</TabContainer>
-            <TabContainer dir={theme.direction}>외적 포트폴리오</TabContainer>
+            <TabContainer dir={theme.direction}><ModifyUser /></TabContainer>
+            <TabContainer dir={theme.direction}><IntPortfolio /></TabContainer>
+            <TabContainer dir={theme.direction}><ExtPortfolio /></TabContainer>
           </SwipeableViews>
         ) : (
           <SwipeableViews
@@ -90,7 +93,7 @@ class MypageTabs extends React.Component {
             index={this.state.value}
             onChangeIndex={this.handleChangeIndex}
           >
-            <TabContainer dir={theme.direction}>회원정보 수정</TabContainer>
+            <TabContainer dir={theme.direction}><ModifyUser /></TabContainer>
           </SwipeableViews>
         )}
       </div>

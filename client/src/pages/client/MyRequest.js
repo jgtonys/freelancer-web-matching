@@ -15,22 +15,15 @@ import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@material-ui/core/Button';
 import AddIcon from '@material-ui/icons/Add';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
 import * as service from '../../services/post';
 import AddRequest from './AddRequest';
+import TeamModal from '../TeamModal';
 import axios from 'axios';
 
-
-
-
-
-let counter = 0;
-function createData(name, calories, fat, carbs, protein) {
-  counter += 1;
-  return { id: counter, name, calories, fat, carbs, protein };
-}
 
 
 
@@ -58,7 +51,13 @@ function getSorting(order, orderBy) {
   return order === 'desc' ? (a, b) => desc(a, b, orderBy) : (a, b) => -desc(a, b, orderBy);
 }
 
+const buttonProducerStyle = {
+    fontSize : 10,
+    padding : 1,
+};
+
 const rows = [
+  { id: 'id', numeric: false, disablePadding: false, label: '' },
   { id: 'title', numeric: false, disablePadding: false, label: '의뢰 이름' },
   { id: 'money', numeric: false, disablePadding: false, label: '금액' },
   { id: 'start_date', numeric: false, disablePadding: false, label: '개발 시작일' },
@@ -66,6 +65,7 @@ const rows = [
   { id: 'requirement', numeric: false, disablePadding: false, label: '언어 조건' },
   { id: 'people', numeric: false, disablePadding: false, label: '제한 인원' },
   { id: 'career', numeric: false, disablePadding: false, label: '제한 경력' },
+  { id: 'request_doc', numeric: false, disablePadding: false, label: '의뢰 스펙' },
   { id: 'team', numeric: false, disablePadding: false, label: '참여 팀' },
   { id: 'status', numeric: false, disablePadding: false, label: '상태' },
 ];
@@ -157,6 +157,7 @@ let MyRequestToolbar = props => {
       <div className={classes.spacer} />
       <div className={classes.actions}>
         <div onClick={addRequest}>
+
         <Tooltip title="Add">
             <IconButton aria-label="Add" >
               <AddIcon />
@@ -190,15 +191,17 @@ const styles = theme => ({
 
 class MyRequest extends React.Component {
   state = {
-    order: 'asc',
-    orderBy: 'calories',
+    order: 'desc',
+    orderBy: 'id',
     selected: [],
     data: [],
     selectedUser: [],
     isOpen: false,
     modal: false,
+    teamModal: false,
     page: 0,
     rowsPerPage: 5,
+    setTeam: 0,
   };
 
   modalToggle() {
@@ -212,8 +215,26 @@ class MyRequest extends React.Component {
     });
   }
 
+  setTeam = async (e,tid) => {
+    const d = await service.getTeamName(tid).then(r => {
+      return r.data;
+    })
+    .catch(e => {
+      f = false;
+      return [];
+    });
+    this.setState({
+      setTeam: d[0].name,
+    });
+  }
+
+  teamModalToggle(e) {
+    this.setState({
+      teamModal: !this.state.teamModal,
+    });
+  }
+
   setSelectedUser(e,n) {
-    console.log(n);
     this.setState({
       selectedUser: n,
     })
@@ -231,6 +252,7 @@ class MyRequest extends React.Component {
     let reqlang = [];
     let reqscore = [];
     let requirement = [];
+    let request_doc = '';
     let lanjson = '';
     for(let i=0;i<array[0].length;i++) {
       requirement = [];
@@ -240,6 +262,12 @@ class MyRequest extends React.Component {
           requirement.push(lanjson);
         }
       }
+      for(let k=0;k<array[2].length;k++) {
+        if(array[0][i].id == array[2][k].request_id) {
+          request_doc = array[2][k].file_location;
+          break;
+        }
+      }
       parsedjson = {
         id: array[0][i].id,
         title: array[0][i].title,
@@ -247,34 +275,21 @@ class MyRequest extends React.Component {
         start_date: array[0][i].start_date,
         end_date: array[0][i].end_date,
         requirement: requirement,
+        request_doc: request_doc,
         people_min: array[0][i].people_min,
         people_max: array[0][i].people_max,
         career: array[0][i].career,
-        team: array[0][i].team,
+        team_id: array[0][i].team_id,
         status: array[0][i].status,
+        client_id: array[0][i].client_id,
+        pending: array[0][i].pending,
       }
       parsedArray.push(parsedjson);
     }
-
-    console.log(parsedArray);
     this.setState({
       data: parsedArray,
     });
   }
-
-  /*
-  const rows = [
-    { id: 'title', numeric: false, disablePadding: false, label: '의뢰 이름' },
-    { id: 'money', numeric: false, disablePadding: false, label: '금액' },
-    { id: 'start_date', numeric: false, disablePadding: false, label: '개발 시작일' },
-    { id: 'end_date', numeric: false, disablePadding: false, label: '개발 마감일' },
-    { id: 'requirement', numeric: false, disablePadding: false, label: '언어 조건' },
-    { id: 'people', numeric: false, disablePadding: false, label: '제한 인원' },
-    { id: 'career', numeric: false, disablePadding: false, label: '제한 경력' },
-    { id: 'team', numeric: false, disablePadding: false, label: '참여 팀' },
-    { id: 'status', numeric: false, disablePadding: false, label: '상태' },
-  ];
-  */
 
   getTable = async () => {
     const uid = window.sessionStorage.getItem('uid');
@@ -284,11 +299,14 @@ class MyRequest extends React.Component {
     })
     .catch(e => {
       f = false;
-      //alert(e.response.data.message);
       return [];
     });
 
     if(f) this.parsingData(d);
+  }
+
+  viewfile = (event,file_location) => {
+    window.location = "/" + file_location;
   }
 
   handleRequestSort = (event, property) => {
@@ -350,6 +368,7 @@ class MyRequest extends React.Component {
       <Paper className={classes.root}>
         <MyRequestToolbar numSelected={selected.length} addRequest={e => this.modalToggle(e)}/>
         <AddRequest modal={this.state.modal} toggle={e =>this.modalToggle(e)}/>
+        <TeamModal modal={this.state.teamModal} id={this.state.setTeam} toggle={(e) =>this.teamModalToggle(e)}/>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <MyRequestHead
@@ -373,7 +392,9 @@ class MyRequest extends React.Component {
                       key={n.id}
                       selected={isSelected}
                     >
-
+                      <TableCell component="th" scope="row" padding="dense">
+                        {n.id}
+                      </TableCell>
                       <TableCell component="th" scope="row" padding="dense">
                         {n.title}
                       </TableCell>
@@ -389,13 +410,28 @@ class MyRequest extends React.Component {
                       </TableCell>
                       <TableCell>{n.people_min} ~ {n.people_max}명</TableCell>
                       <TableCell>{n.career}년</TableCell>
-                      <TableCell>{n.team}</TableCell>
+                      <TableCell>
+                      <Button color="secondary" style={buttonProducerStyle}
+                        onClick={e => this.viewfile(e,n.request_doc)}
+                        variant="contained"
+                        fullWidth
+                      >스펙 문서
+                      </Button>
+                      </TableCell>
+                      <TableCell>{n.team_id !== null ? (
+                        <Button variant="contained" color="primary" style={buttonProducerStyle} onClick={e => {
+                          this.setTeam(e,n.team_id);
+                          this.teamModalToggle(e);
+                        }}> 팀 정보 </Button>
+                      ):(
+                        <p>없음</p>
+                      )}</TableCell>
                       <TableCell>{n.status === 0 ? (
                         <p>진행전</p>
                       ) : (<p>{n.status === 1 ? (
-                        진행중
+                        <p>진행중</p>
                       ): (
-                        완료
+                        <p>완료</p>
                       )}</p>)}</TableCell>
                     </TableRow>
                   );

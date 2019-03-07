@@ -211,8 +211,6 @@ module.exports.clientLogin = (req, res, next) => {
 
 Authenticate = (plainText, db_password) => {
   return new Promise((resolve, reject) => {
-    //console.log("plainText", plainText);
-    //console.log("password", db_password);
     bcrypt.compare(plainText, db_password, (err, res) => {
       if (err) reject(err);
       else resolve(res);

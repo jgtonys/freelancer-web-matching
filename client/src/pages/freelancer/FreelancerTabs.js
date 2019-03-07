@@ -6,6 +6,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
+import MyRequest from './MyRequest';
 
 function TabContainer({ children, dir }) {
   return (
@@ -52,9 +53,9 @@ class FreelancerTabs extends React.Component {
             indicatorColor="primary"
             textColor="primary"
           >
-            <Tab label="모든 사용자" />
-            <Tab label="모든 의뢰" />
-            <Tab label="모든 팀" />
+            <Tab label="신청 가능 의뢰" />
+            <Tab label="내가 진행중인 의뢰" />
+            <Tab label="내 신청 대기중인 의뢰" />
           </Tabs>
         </AppBar>
         <SwipeableViews
@@ -62,12 +63,24 @@ class FreelancerTabs extends React.Component {
           index={this.state.value}
           onChangeIndex={this.handleChangeIndex}
         >
-          <TabContainer dir={theme.direction}>모든 의뢰 목록</TabContainer>
-          <TabContainer dir={theme.direction}>진행중인 의뢰</TabContainer>
-          <TabContainer dir={theme.direction}>대기중인 의뢰</TabContainer>
+          <TabContainer dir={theme.direction}><MyRequest index={0}/></TabContainer>
+          <TabContainer dir={theme.direction}><MyRequest index={1}/></TabContainer>
+          <TabContainer dir={theme.direction}><MyRequest index={2}/></TabContainer>
         </SwipeableViews>
       </div>
     );
+  }
+
+  getTable = async () => {
+    const d = await service.getTable().then(r => {
+      return r.data;
+    })
+    .catch(e => {
+      alert(e.response.data.message);
+      return [];
+    });
+
+    this.parsingData(d);
   }
 }
 

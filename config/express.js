@@ -5,8 +5,9 @@ const fs = require('fs');
 const path = require('path');
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../client/dist')));
+app.use(express.static(path.join(__dirname, '../client/src/static')));
 
 let routePath = path.join(__dirname, '../app/routes');
 let files = fs.readdirSync(routePath);

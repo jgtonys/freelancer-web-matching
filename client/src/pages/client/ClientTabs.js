@@ -7,7 +7,8 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import MyRequest from './MyRequest';
-
+import OngoingRequest from './OngoingRequest';
+import WaitingRequest from './WaitingRequest';
 
 function TabContainer({ children, dir }) {
   return (
@@ -65,8 +66,8 @@ class ClientTabs extends React.Component {
           onChangeIndex={this.handleChangeIndex}
         >
           <TabContainer dir={theme.direction}><MyRequest /></TabContainer>
-          <TabContainer dir={theme.direction}>진행중인 의뢰</TabContainer>
-          <TabContainer dir={theme.direction}>대기중인 의뢰</TabContainer>
+          <TabContainer dir={theme.direction}><OngoingRequest /></TabContainer>
+          <TabContainer dir={theme.direction}><WaitingRequest /></TabContainer>
         </SwipeableViews>
       </div>
     );

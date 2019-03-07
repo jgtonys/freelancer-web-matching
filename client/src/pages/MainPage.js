@@ -9,35 +9,45 @@ import Button from '@material-ui/core/Button';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import SwipeableViews from 'react-swipeable-views';
+import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import Grid from '@material-ui/core/Grid';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { autoPlay } from 'react-swipeable-views-utils';
 
 const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
 const tutorialSteps = [
   {
-    label: '아이유1',
+    label: 'REACT 16',
     imgPath:
-      'https://i1.wp.com/cndowebs.com/wp-content/uploads/2018/08/1535691173_maxresdefault.jpg?w=1280',
+      'https://cdn-images-1.medium.com/max/1200/1*YG3-T77xGBfKDn5SfE6P8w.jpeg',
   },
   {
-    label: '아이유2',
+    label: 'NODEJS',
     imgPath:
-      'http://imgs.mcot.net/images/2018/03/1521535055839.jpg',
+      'https://nodejs.org/static/images/logos/nodejs-new-pantone-black.png',
   },
   {
-    label: '아이유3',
+    label: 'JWT',
     imgPath:
-      'https://i.ytimg.com/vi/frrBSyEqS6c/maxresdefault.jpg',
+      'https://cdn-images-1.medium.com/max/2000/1*0ABaK4SrXGUnXgmXqMkZtA.png',
   },
   {
-    label: '아이유4',
+    label: 'BCRYPT',
     imgPath:
-      'https://img.sbs.co.kr/newimg/news/20180503/201178297_1280.jpg',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROZZx0xz3esrNQ_my1zeDvKdLB3szAAOCeq84NcyAMS_-qv0B5',
   },
   {
-    label: '아이유5',
+    label: 'DATABASE',
     imgPath:
-      'http://image.chosun.com/sitedata/image/201810/08/2018100800926_0.jpg',
+      'https://nesoy.github.io/assets/logo/database.jpg',
   },
 ];
 
@@ -55,15 +65,31 @@ const styles = theme => ({
   },
   img: {
     display: 'block',
-    overflow: 'hidden',
     width: '100%',
+    height: '50%',
   },
+
 });
+
+const mb = {
+  margin: '5px',
+}
+
 
 
 class Mainpage extends React.Component {
   state = {
     activeStep: 0,
+    expanded: null,
+  };
+
+
+
+
+  handleChange = panel => (event, expanded) => {
+    this.setState({
+      expanded: expanded ? panel : false,
+    });
   };
 
   handleNext = () => {
@@ -84,11 +110,144 @@ class Mainpage extends React.Component {
 
   render() {
     const { classes, theme } = this.props;
-    const { activeStep } = this.state;
+    const { activeStep, expanded } = this.state;
     const maxSteps = tutorialSteps.length;
     return (
         <div className={classes.root}>
-        <Paper square elevation={0} className={classes.header}>
+        <Grid container spacing={24}>
+        <Grid item xs={8}>
+        <Card className="animated flipInX" style={mb}>
+          <CardActionArea>
+            <CardContent>
+              <Typography gutterBottom variant="h5" component="h2">
+                React 16
+              </Typography>
+              <Typography component="p">
+                Frontend page is made by react 16.
+                Using react-router we made SPA(Single Page Application)
+                We used Webpack, Babel for compile environment
+              </Typography>
+            </CardContent>
+          </CardActionArea>
+          <CardActions>
+            <Button size="small" color="primary">
+              Learn React
+            </Button>
+            <Button size="small" color="primary">
+              Learn SPA
+            </Button>
+          </CardActions>
+        </Card>
+        <Card className="animated flipInX delay-1s" style={mb}>
+          <CardActionArea>
+            <CardContent>
+              <Typography gutterBottom variant="h5" component="h2">
+                NodeJS
+              </Typography>
+              <Typography component="p">
+                Backend is made by NodeJs.
+                We used Express, Axios, Node-sass, Lodash, Multer
+              </Typography>
+            </CardContent>
+          </CardActionArea>
+          <CardActions>
+            <Button size="small" color="primary">
+              Learn NodeJS
+            </Button>
+            <Button size="small" color="primary">
+              Learn Express
+            </Button>
+          </CardActions>
+        </Card>
+        <Card className="animated flipInX delay-2s" style={mb}>
+          <CardActionArea>
+            <CardContent>
+              <Typography gutterBottom variant="h5" component="h2">
+                JsonWebToken
+              </Typography>
+              <Typography component="p">
+                Session is made by JWT(JsonWebToken).
+                Also we used local sessionStorage to reduce server overload.
+              </Typography>
+            </CardContent>
+          </CardActionArea>
+          <CardActions>
+            <Button size="small" color="primary">
+              Learn JWT
+            </Button>
+            <Button size="small" color="primary">
+              Learn SessionStorage
+            </Button>
+          </CardActions>
+        </Card>
+        <Card className="animated flipInX delay-3s" style={mb}>
+          <CardActionArea>
+            <CardContent>
+              <Typography gutterBottom variant="h5" component="h2">
+                Bcrypt
+              </Typography>
+              <Typography component="p">
+                We used Bcrypt for password encryption.
+              </Typography>
+            </CardContent>
+          </CardActionArea>
+          <CardActions>
+            <Button size="small" color="primary">
+              Learn Bcrypt
+            </Button>
+          </CardActions>
+        </Card>
+
+        </Grid>
+        <Grid item xs={4} className="animated fadeIn delay-2s">
+        <ExpansionPanel expanded={expanded === 'panel1'} onChange={this.handleChange('panel1')} style={mb}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>MADE BY</Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <Typography>
+              자랑스러운 연세대학교 컴퓨터과학과 14학번 3학년 학생 3명이 모여서 만든 작품입니다. 단순히 만들면 더 단순할 수 있었지만
+              열정을 담아 쓸데없이 거의 풀스택으로 만들었습니다.
+            </Typography>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+        <ExpansionPanel expanded={expanded === 'panel2'} onChange={this.handleChange('panel2')} style={mb}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>김준규</Typography>
+            <Typography> : 백앤드 및 프론트 개발자 </Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <Typography>
+              프로젝트의 전체 구조를 구성하고 프론트 컴파일 환경과 각종 유명하다는 모듈들을 끌어모은 장본인입니다.
+              지금 메인페이지를 만들고 이 글을 쓰고 있는 학생입니다.
+            </Typography>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+        <ExpansionPanel expanded={expanded === 'panel3'} onChange={this.handleChange('panel3')} style={mb}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>황석준</Typography>
+            <Typography> : 디비 구조 및 프론트 개발자</Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <Typography>
+              전체 프로젝트의 디비 구조를 설계하고, 직접 넣을 때에는 Mysql Workbench 로 넣으면 될 것을 굳이 DDL로 짜는 성실한 학생입니다.
+              많은 프론트 페이지를 담당하였고, 라우팅 페이지 또한 개발하였습니다.
+            </Typography>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+        <ExpansionPanel expanded={expanded === 'panel4'} onChange={this.handleChange('panel4')} style={mb}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>곽병우</Typography>
+            <Typography> : 프론트 개발 및 디자인 담당자</Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <Typography>
+              한땀 한땀 전체 프로젝트의 디자인을 구상하고 그 디자인을 프론트 페이지에 적용시키는 모범적인 자세를 보인 학생입니다.
+              전체 보고서 작성에 큰 기여를 하였고, 전체 프로젝트 디버깅 또한 담당하였습니다.
+            </Typography>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+        <Paper square elevation={0} className={classes.header} style={mb}>
           <Typography>{tutorialSteps[activeStep].label}</Typography>
         </Paper>
         <AutoPlaySwipeableViews
@@ -96,6 +255,7 @@ class Mainpage extends React.Component {
           index={activeStep}
           onChangeIndex={this.handleStepChange}
           enableMouseEvents
+          style={mb}
         >
           {tutorialSteps.map((step, index) => (
             <div key={step.label}>
@@ -123,6 +283,8 @@ class Mainpage extends React.Component {
             </Button>
           }
         />
+        </Grid>
+        </Grid>
       </div>
     );
   }

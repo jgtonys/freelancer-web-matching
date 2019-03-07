@@ -16,20 +16,14 @@ import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import AddIcon from '@material-ui/icons/Add';
+import Button from '@material-ui/core/Button';
 import FilterListIcon from '@material-ui/icons/FilterList';
+import DeleteIcon from '@material-ui/icons/Delete';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
+import TeamModal from '../TeamModal';
+import RequestDetail from './RequestDetail';
 import * as service from '../../services/post';
 import axios from 'axios';
-
-
-
-
-
-let counter = 0;
-function createData(name, calories, fat, carbs, protein) {
-  counter += 1;
-  return { id: counter, name, calories, fat, carbs, protein };
-}
 
 
 
@@ -53,11 +47,17 @@ function stableSort(array, cmp) {
   return stabilizedThis.map(el => el[0]);
 }
 
+const buttonProducerStyle = {
+  fontSize : 10,
+  padding : 1,
+};
+
 function getSorting(order, orderBy) {
   return order === 'desc' ? (a, b) => desc(a, b, orderBy) : (a, b) => -desc(a, b, orderBy);
 }
 
 const rows = [
+  { id: 'id', numeric: false, disablePadding: false, label: '' },
   { id: 'title', numeric: false, disablePadding: false, label: '의뢰 이름' },
   { id: 'money', numeric: false, disablePadding: false, label: '금액' },
   { id: 'start_date', numeric: false, disablePadding: false, label: '개발 시작일' },
@@ -65,6 +65,7 @@ const rows = [
   { id: 'requirement', numeric: false, disablePadding: false, label: '언어 조건' },
   { id: 'people', numeric: false, disablePadding: false, label: '제한 인원' },
   { id: 'career', numeric: false, disablePadding: false, label: '제한 경력' },
+  { id: 'request_doc', numeric: false, disablePadding: false, label: '의뢰 스펙' },
   { id: 'team', numeric: false, disablePadding: false, label: '참여 팀' },
   { id: 'status', numeric: false, disablePadding: false, label: '상태' },
 ];
@@ -145,7 +146,7 @@ const toolbarStyles = theme => ({
 });
 
 let MyRequestToolbar = props => {
-  const { numSelected, classes } = props;
+  const { numSelected, classes, selectedDel } = props;
 
   return (
     <Toolbar
@@ -153,8 +154,36 @@ let MyRequestToolbar = props => {
         [classes.highlight]: numSelected > 0,
       })}
     >
+      <div className={classes.title}>
+        {numSelected > 0 ? (
+          <Typography color="inherit" variant="subtitle1">
+            {numSelected} selected
+          </Typography>
+        ) : (
+          <Typography variant="h6" id="tableTitle">
+            All Requests
+          </Typography>
+        )}
+      </div>
       <div className={classes.spacer} />
       <div className={classes.actions}>
+        {numSelected > 0 ? (
+          <div onClick={selectedDel}>
+          <Tooltip title="Delete">
+
+              <IconButton aria-label="Delete" >
+                <DeleteIcon />
+              </IconButton>
+
+          </Tooltip>
+          </div>
+        ) : (
+          <Tooltip title="Filter list">
+            <IconButton aria-label="Filter list">
+              <FilterListIcon />
+            </IconButton>
+          </Tooltip>
+        )}
       </div>
     </Toolbar>
   );
@@ -182,15 +211,17 @@ const styles = theme => ({
 
 class MyRequest extends React.Component {
   state = {
-    order: 'asc',
-    orderBy: 'calories',
+    order: 'desc',
+    orderBy: 'id',
     selected: [],
     data: [],
-    selectedUser: [],
+    selectedRequest: [],
     isOpen: false,
     modal: false,
     page: 0,
     rowsPerPage: 5,
+    setTeam: 0,
+    teamModal: false,
   };
 
   modalToggle() {
@@ -204,11 +235,23 @@ class MyRequest extends React.Component {
     });
   }
 
-  setSelectedUser(e,n) {
-    console.log(n);
-    this.setState({
-      selectedUser: n,
+  setTeam = async (e,tid) => {
+    const d = await service.getTeamName(tid).then(r => {
+      return r.data;
     })
+    .catch(e => {
+      f = false;
+      return [];
+    });
+    this.setState({
+      setTeam: d[0].name,
+    });
+  }
+
+  teamModalToggle(e) {
+    this.setState({
+      teamModal: !this.state.teamModal,
+    });
   }
 
   componentDidMount() {
@@ -223,6 +266,7 @@ class MyRequest extends React.Component {
     let reqlang = [];
     let reqscore = [];
     let requirement = [];
+    let request_doc = '';
     let lanjson = '';
     for(let i=0;i<array[0].length;i++) {
       requirement = [];
@@ -232,6 +276,12 @@ class MyRequest extends React.Component {
           requirement.push(lanjson);
         }
       }
+      for(let k=0;k<array[2].length;k++) {
+        if(array[0][i].id == array[2][k].request_id) {
+          request_doc = array[2][k].file_location;
+          break;
+        }
+      }
       parsedjson = {
         id: array[0][i].id,
         title: array[0][i].title,
@@ -239,34 +289,22 @@ class MyRequest extends React.Component {
         start_date: array[0][i].start_date,
         end_date: array[0][i].end_date,
         requirement: requirement,
+        request_doc: request_doc,
         people_min: array[0][i].people_min,
         people_max: array[0][i].people_max,
         career: array[0][i].career,
-        team: array[0][i].team,
+        team_id: array[0][i].team_id,
         status: array[0][i].status,
+        client_id: array[0][i].client_id,
+        pending: array[0][i].pending,
       }
       parsedArray.push(parsedjson);
     }
 
-    console.log(parsedArray);
     this.setState({
       data: parsedArray,
     });
   }
-
-  /*
-  const rows = [
-    { id: 'title', numeric: false, disablePadding: false, label: '의뢰 이름' },
-    { id: 'money', numeric: false, disablePadding: false, label: '금액' },
-    { id: 'start_date', numeric: false, disablePadding: false, label: '개발 시작일' },
-    { id: 'end_date', numeric: false, disablePadding: false, label: '개발 마감일' },
-    { id: 'requirement', numeric: false, disablePadding: false, label: '언어 조건' },
-    { id: 'people', numeric: false, disablePadding: false, label: '제한 인원' },
-    { id: 'career', numeric: false, disablePadding: false, label: '제한 경력' },
-    { id: 'team', numeric: false, disablePadding: false, label: '참여 팀' },
-    { id: 'status', numeric: false, disablePadding: false, label: '상태' },
-  ];
-  */
 
   getTable = async () => {
     let f = true;
@@ -279,6 +317,16 @@ class MyRequest extends React.Component {
       return [];
     });
     if(f) this.parsingData(d);
+  }
+
+  viewfile = (event,file_location) => {
+    window.location = "/" + file_location;
+  }
+
+  setSelectedRequest(e,n) {
+    this.setState({
+      selectedRequest: n,
+    })
   }
 
   handleRequestSort = (event, property) => {
@@ -325,6 +373,11 @@ class MyRequest extends React.Component {
     this.setState({ page });
   };
 
+  selectedDel = event => {
+    service.deleteRequest(this.state.selected);
+
+  }
+
   handleChangeRowsPerPage = event => {
     this.setState({ rowsPerPage: event.target.value });
   };
@@ -338,6 +391,9 @@ class MyRequest extends React.Component {
 
     return (
       <Paper className={classes.root}>
+        <MyRequestToolbar numSelected={selected.length} selectedDel={e => this.selectedDel(e)}/>
+        <TeamModal modal={this.state.teamModal} id={this.state.setTeam} toggle={(e) =>this.teamModalToggle(e)}/>
+        <RequestDetail modal={this.state.modal} toggle={e =>this.modalToggle(e)} data={this.state.selectedRequest} modify={false}/>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <MyRequestHead
@@ -361,8 +417,19 @@ class MyRequest extends React.Component {
                       key={n.id}
                       selected={isSelected}
                     >
+                      <TableCell padding="checkbox">
+                        {(n.status !== 1) && (n.status !== 2)  ? (
+                          <Checkbox checked={isSelected} onClick={event => this.handleClick(event, n.id)}/>
+                        ):(
+                          <Checkbox disabled={true} />
+                        )}
 
-                      <TableCell component="th" scope="row" padding="dense">
+                      </TableCell>
+                      <TableCell component="th" scope="row" padding="dense" onClick={e => {
+                        this.setSelectedRequest(e,n);
+                        this.modalToggle(e);
+                        }
+                      }>
                         {n.title}
                       </TableCell>
                       <TableCell>{n.money}</TableCell>
@@ -377,13 +444,28 @@ class MyRequest extends React.Component {
                       </TableCell>
                       <TableCell>{n.people_min} ~ {n.people_max}명</TableCell>
                       <TableCell>{n.career}년</TableCell>
-                      <TableCell>{n.team}</TableCell>
+                      <TableCell>
+                      <Button color="secondary" style={buttonProducerStyle}
+                        onClick={e => this.viewfile(e,n.request_doc)}
+                        variant="contained"
+                        fullWidth
+                      >스펙 문서
+                      </Button>
+                      </TableCell>
+                      <TableCell>{n.team_id !== null ? (
+                        <Button variant="contained" color="primary" style={buttonProducerStyle} onClick={e => {
+                          this.setTeam(e,n.team_id);
+                          this.teamModalToggle(e);
+                        }}> 팀 정보 </Button>
+                      ):(
+                        <p>없음</p>
+                      )}</TableCell>
                       <TableCell>{n.status === 0 ? (
                         <p>진행전</p>
                       ) : (<p>{n.status === 1 ? (
-                        진행중
+                        <p>진행중</p>
                       ): (
-                        완료
+                        <p>완료</p>
                       )}</p>)}</TableCell>
                     </TableRow>
                   );
